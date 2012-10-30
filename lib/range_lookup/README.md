@@ -25,11 +25,11 @@ flattened index:
 
      4  [A C]
      7  [A B C]
-    11  [A B C]
+    11  [B C]
     16  [B C D]
-    18  [B C D]
-    21  [B D]
-    23  [D]
+    18  [B D]
+    21  [D]
+    23  []
 
 For any given day, we can match the list (set) of members that are on vacation,
 by:

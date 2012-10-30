@@ -7,7 +7,7 @@ local member = ARGV[1]
 local min    = tonumber(ARGV[2])
 local max    = tonumber(ARGV[3])
 
-if min == nil or max == nil or min >= max then
+if min == nil or max == nil or min > max then
   return redis.error_reply("min/max are not numeric or out of range")
 end
 

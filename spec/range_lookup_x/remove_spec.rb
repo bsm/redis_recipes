@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "Range Lookup: Removing" do
+describe "Range Lookup X: Removing" do
 
   def state(c = :to_i)
     ranges = {}
@@ -43,31 +43,28 @@ describe "Range Lookup: Removing" do
       lambda { evalsha :remove, keys: ["one"], argv: ["one", 3, 2] }.should raise_error(Redis::CommandError, /not numeric or out of range/)
     end
 
-    it 'should return OK if successful' do
-      remove("A", 8, 17).should == "OK"
-    end
-
   end
 
   describe "removing" do
     before { add("A", 8, 17) }
+    
+    it 'should return OK if successful' do  
+      remove("A", 8, 17).should == "OK"
+    end
 
-    it 'should support zero bounds' do
+    it 'should support negative ranges & zero bounds' do
       scenario B: -5..0, C: 0..5
 
       lambda {
         remove("B", -5, 0)
-        remove("C", 0, 5)
+        remove("C",  0, 5)
       }.should change { state }.
-        from(-5 => "B", 0 => "BC", 5 => "C", 8 => "A", 17 => "A").
-        to(8 => "A", 17 => "A")
+        from(-5 => "B", 0 => "C", 5 => "", 8 => "A", 17 => "").
+        to(8 => "A", 17 => "")
     end
 
     it 'should clean up index' do
-      lambda {
-        add("B", 15, 22)
-        add("C", 15, 23)
-      }.should change { brackets }.to ["8", "15", "17", "22", "23"]
+      scenario B: 15..22, C: 15..23
 
       lambda {
         remove("B", 15, 22)
@@ -89,98 +86,98 @@ describe "Range Lookup: Removing" do
     it "should remove from [A: 1-2, B: 3-4]" do
       scenario A: 1..2, B: 3..4
       lambda { remove("A", 1, 2) }.should change { state }.
-        from(1 => "A", 2 => "A", 3 => "B", 4 => "B").
-        to(3 => "B", 4 => "B")
+        from(1 => "A", 2 => "", 3 => "B", 4 => "").
+        to(3 => "B", 4 => "")
     end
 
     it "should remove from [A: 3-4, B: 1-2]" do      
       scenario A: 3..4, B: 1..2
       lambda { remove("A", 3, 4) }.should change { state }.
-        from(1 => "B", 2 => "B", 3 => "A", 4 => "A").
-        to(1 => "B", 2 => "B")
+        from(1 => "B", 2 => "", 3 => "A", 4 => "").
+        to(1 => "B", 2 => "")
     end
 
     it "should remove from [A: 1-3, B: 2-4]" do
       scenario A: 1..3, B: 2..4
       lambda { remove("A", 1, 3) }.should change { state }.
-        from(1 => "A", 2 => "AB", 3 => "AB", 4 => "B").
-        to(2 => "B", 4 => "B")
+        from(1 => "A", 2 => "AB", 3 => "B", 4 => "").
+        to(2 => "B", 4 => "")
     end
 
     it "should remove from [A: 2-4, B: 1-3]" do
       scenario A: 2..4, B: 1..3
       lambda { remove("A", 2, 4) }.should change { state }.
-        from(1 => "B", 2 => "AB", 3 => "AB", 4 => "A").
-        to(1 => "B", 3 => "B")
+        from(1 => "B", 2 => "AB", 3 => "A", 4 => "").
+        to(1 => "B", 3 => "")
     end
 
     it "should remove from [A: 1-4, B: 2-3]" do
       scenario A: 1..4, B: 2..3
       lambda { remove("A", 1, 4) }.should change { state }.
-        from(1 => "A", 2 => "AB", 3 => "AB", 4 => "A").
-        to(2 => "B", 3 => "B")
+        from(1 => "A", 2 => "AB", 3 => "A", 4 => "").
+        to(2 => "B", 3 => "")
     end
 
     it "should remove from [A: 2-3, B: 1-4]" do
       scenario A: 2..3, B: 1..4
       lambda { remove("A", 2, 3) }.should change { state }.
-        from(1 => "B", 2 => "AB", 3 => "AB", 4 => "B").
-        to(1 => "B", 4 => "B")
+        from(1 => "B", 2 => "AB", 3 => "B", 4 => "").
+        to(1 => "B", 4 => "")
     end
 
     it "should remove from [A: 1-3, B: 3-4]" do
       scenario A: 1..3, B: 3..4
       lambda { remove("A", 1, 3) }.should change { state }.
-        from(1 => "A", 3 => "AB", 4 => "B").
-        to(3 => "B", 4 => "B")
+        from(1 => "A", 3 => "B", 4 => "").
+        to(3 => "B", 4 => "")
     end
 
     it "should remove from [A: 1-4, B: 3-4]" do
       scenario A: 1..4, B: 3..4
       lambda { remove("A", 1, 4) }.should change { state }.
-        from(1 => "A", 3 => "AB", 4 => "AB").
-        to(3 => "B", 4 => "B")
+        from(1 => "A", 3 => "AB", 4 => "").
+        to(3 => "B", 4 => "")
     end
 
     it "should remove from [A: 3-4, B: 1-3]" do
       scenario A: 3..4, B: 1..3
       lambda { remove("A", 3, 4) }.should change { state }.
-        from(1 => "B", 3 => "AB", 4 => "A").
-        to(1 => "B", 3 => "B")
+        from(1 => "B", 3 => "A", 4 => "").
+        to(1 => "B", 3 => "")
     end
 
     it "should remove from [A: 3-4, B: 1-4]" do
       scenario A: 3..4, B: 1..4
       lambda { remove("A", 3, 4) }.should change { state }.
-        from(1 => "B", 3 => "AB", 4 => "AB").
-        to(1 => "B", 4 => "B")
+        from(1 => "B", 3 => "AB", 4 => "").
+        to(1 => "B", 4 => "")
     end
 
     it "should remove from [A: 1-4, B: 1-2]" do
       scenario A: 1..4, B: 1..2
       lambda { remove("A", 1, 4) }.should change { state }.
-        from(1 => "AB", 2 => "AB", 4 => "A").
-        to(1 => "B", 2 => "B")
+        from(1 => "AB", 2 => "A", 4 => "").
+        to(1 => "B", 2 => "")
     end
 
     it "should remove from [A: 2-4, B: 1-2]" do
       scenario A: 2..4, B: 1..2
       lambda { remove("A", 2, 4) }.should change { state }.
-        from(1 => "B", 2 => "AB", 4 => "A").
-        to(1 => "B", 2 => "B")
+        from(1 => "B", 2 => "A", 4 => "").
+        to(1 => "B", 2 => "")
     end
 
     it "should remove from [A: 1-4, B: 1-4]" do
       scenario A: 1..4, B: 1..4
       lambda { remove("A", 1, 4) }.should change { state }.
-        from(1 => "AB", 4 => "AB").
-        to(1 => "B", 4 => "B")
+        from(1 => "AB", 4 => "").
+        to(1 => "B", 4 => "")
     end
 
     it "should remove from [A: 1-4]" do
       scenario A: 1..4
       lambda { remove("A", 1, 4) }.should change { state }.
-        from(1 => "A", 4 => "A").
+        from(1 => "A", 4 => "").
         to({})
     end
 
