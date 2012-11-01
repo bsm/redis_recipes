@@ -1,3 +1,8 @@
+PATH
+  remote: .
+  specs:
+    redis_recipes (0.3.0)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -18,5 +23,6 @@ PLATFORMS
 
 DEPENDENCIES
   rake
-  redis
+  redis (~> 3.0.0)
+  redis_recipes!
   rspec
